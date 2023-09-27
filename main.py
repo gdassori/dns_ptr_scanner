@@ -81,6 +81,7 @@ def save_last_ip(ip):
     # Salva l'ultimo IP scannerizzato in .last_ip_scanned
     with open('.last_ip_scanned', 'w') as f:
         f.write(str(ip))
+    return ip
 
 def save_record(ip, record, dns_server):
     with open('dns_records.csv', 'a', newline='') as f:
@@ -94,47 +95,44 @@ def fetch_ip(start_ip, end_ip):
     for ip in IPRange(start_ip, end_ip):
         yield ip
 
-def main():
+def main(start_ip, end_ip):
+    while 1:
+        try:
+            servers = load_dns_servers()
+            records = load_dns_records()
+            servers = check_dns_servers(servers, records)
+        
+            i = 1
+            for ip in fetch_ip(start_ip, end_ip):
+                if not i % 1000:
+                    servers = check_dns_servers(servers, records)
+                i += 1
+                dns_server, record = get_ptr(ip, servers)
+                if record is not None:
+                    save_record(ip, record, dns_server)
+                start_ip = save_last_ip(ip)
+        except KeyboardInterrupt:
+            print('Exiting gracefully')
+            sys.exit(0)
+        except:
+            print('Error, sleeping 1 minute')
+            time.sleep(60)    
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--start', type=str, help='Start IP address')
-    parser.add_argument('--end', type=str, help='End IP address')
+    parser.add_argument('--start', type=str, help='Start IP address', default='1.1.1.1')
+    parser.add_argument('--end', type=str, help='End IP address', default='255.255.255.255')
     args = parser.parse_args()
 
     if args.start or args.end:
         if os.path.exists('.last_ip_scanned'):
             print("Refusing to start: Range specified and .last_ip_scanned file exists. Scan already in progress and cannot change parameters. Delete the file to start over.")
-            raise EnvironmentError
-        start_ip = IPAddress(getattr(args, 'start', '1.1.1.1'))
-        end_ip = IPAddress(getattr(args, 'end', '255.255.255.255'))
+            sys.exit(1)
+        start_ip = IPAddress(args.start)
+        end_ip = IPAddress(args.end)
     else:
         start_ip = read_last_ip()
         end_ip = IPAddress('255.255.255.255')
+        
+    main(start_ip, end_ip)
 
-    # Rest of the code remains the same
-    servers = load_dns_servers()
-    records = load_dns_records()
-    servers = check_dns_servers(servers, records)
-
-    i = 1
-    for ip in fetch_ip(start_ip, end_ip):
-        if not i % 1000:
-            servers = check_dns_servers(servers, records)
-        i += 1
-        dns_server, record = get_ptr(ip, servers)
-        if record is not None:
-            save_record(ip, record, dns_server)
-        record and print(f'IP {ip} has record {record}')
-        save_last_ip(ip)
-
-if __name__ == "__main__":
-    while 1:
-       try:
-           main()
-       except EnvironmentError:
-           sys.exit(1)
-       except KeyboardInterrupt:
-           print('Exiting gracefully')
-           sys.exit(0)
-       except:
-           print('Error, sleeping 1 minute')
-           time.sleep(60)
