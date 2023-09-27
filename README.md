@@ -45,7 +45,8 @@ If you use a range option (--start \ --end) again after the first run:
 
 ```
 ~/scan_dns$ venv/bin/python main.py --end=2.2.2.2
-Refusing to start: Range specified and .last_ip_scanned file exists. Scan already in progress and cannot change parameters. Delete the file to start over.
+Refusing to start: Range specified and .last_ip_scanned file exists. 
+Scan already in progress and cannot change parameters. Delete the file to start over.
 ```
 
 #### filez
