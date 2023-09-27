@@ -120,16 +120,16 @@ def main(start_ip, end_ip):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--start', type=str, help='Start IP address', default='1.1.1.1')
-    parser.add_argument('--end', type=str, help='End IP address', default='255.255.255.255')
+    parser.add_argument('--start', type=str, help='Start IP address')
+    parser.add_argument('--end', type=str, help='End IP address')
     args = parser.parse_args()
 
     if args.start or args.end:
         if os.path.exists('.last_ip_scanned'):
             print("Refusing to start: Range specified and .last_ip_scanned file exists. Scan already in progress and cannot change parameters. Delete the file to start over.")
             sys.exit(1)
-        start_ip = IPAddress(args.start)
-        end_ip = IPAddress(args.end)
+        start_ip = IPAddress(getattr(args, 'start', '1.1.1.1'))
+        end_ip = IPAddress(getattr(args, 'end', '255.255.255.255'))
     else:
         start_ip = read_last_ip()
         end_ip = IPAddress('255.255.255.255')
