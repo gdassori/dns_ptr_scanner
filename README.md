@@ -7,8 +7,19 @@ This software dumps, using a pool of DNS servers, the PTR records from the root-
 
 Why PTR records? Because IPv4 PTR records can be easily enumerated, as their space is limited to 4 billion of records or so. 
 
-Takes up to 3 weeks to complete a full internet scan, I voluntarily decided to avoid parallelization.
+Takes months to complete a full internet scan, I voluntarily decided to avoid parallelization.
 
+Basic help:
+```
+~/dns_ptr_scanner$ venv/bin/python main.py  --help
+usage: main.py [-h] [--start START] [--end END]
+
+options:
+  -h, --help     show this help message and exit
+  --start START  Start IP address
+  --end END      End IP address
+```
+First run:
 
 ```
 ~/dns_ptr_scanner$ venv/bin/python main.py
@@ -30,9 +41,16 @@ total 100
  4 drwxrwxr-x  4 1000 1000  4096 Sep 22 11:43 venv
 ~/scan_dns$ 
 ```
+If you use a range option (--start \ --end) again after the first run:
+
+```
+~/scan_dns$ venv/bin/python main.py --end=2.2.2.2
+Refusing to start: Range specified and .last_ip_scanned file exists. Scan already in progress and cannot change parameters. Delete the file to start over.
+```
+
 #### filez
 
-- .last_ip_scanned to keep the app state (delete it to start over)
+- .last_ip_scanned to keep the app state (delete it to start over, and you should clear dns_records.csv too but this is not checked as the file is appended)
 - dns_records.csv is the output file. CSV format: IP, Date, Host, DNS (which DNS has been used to fetch the response)
 - as you can see, a 'venv' has also been created. I use a virtual environment to keep the stuff clean.
 
