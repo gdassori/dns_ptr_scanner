@@ -111,6 +111,8 @@ def main(start_ip, end_ip):
                 if record is not None:
                     save_record(ip, record, dns_server)
                 start_ip = save_last_ip(ip)
+            print('Scan completed')
+            return
         except KeyboardInterrupt:
             print('Exiting gracefully')
             sys.exit(0)
